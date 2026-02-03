@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprar Entrada - EKKLESIA 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #151515;
+            --border: #262626;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1a1;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            background-color: var(--bg-primary);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+        
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        
+        .back-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+        
+        /* Main Content */
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--accent);
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 3rem;
+        }
+        
+        /* Layout de dos columnas */
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        @media (min-width: 1024px) {
+            .checkout-grid {
+                grid-template-columns: 1.5fr 1fr;
+            }
+        }
+        
+        /* Sección de Información del Evento */
+        .event-summary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+        
+        .event-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .event-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.6));
+        }
+        
+        .event-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .event-badge {
+            display: inline-block;
+            padding: 0.375rem 0.875rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .event-title-summary {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .event-details {
+            padding: 1.5rem 2rem;
+        }
+        
+        .event-detail-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .event-detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .event-detail-icon {
+            font-size: 1.25rem;
+            min-width: 24px;
+        }
+        
+        .event-detail-content {
+            flex: 1;
+        }
+        
+        .event-detail-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        
+        .event-detail-value {
+            font-weight: 600;
+        }
+        
+        /* Formulario de Compra */
+        .purchase-form {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-number {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        
+        /* Tipos de entrada */
+        .ticket-types {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .ticket-option {
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .ticket-option:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .ticket-option.selected {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .ticket-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+        
+        .ticket-option input[type="radio"] {
+            display: none;
+        }
+        
+        .ticket-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .ticket-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .ticket-icon.general {
+            background: rgba(161, 161, 161, 0.1);
+        }
+        
+        .ticket-icon.vip {
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .ticket-icon.premium {
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .ticket-name {
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        
+        .ticket-price {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--success);
+            margin-left: auto;
+        }
+        
+        .ticket-features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .ticket-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .ticket-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: 700;
+        }
+        
+        /* Cantidad Selector */
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+        
+        .quantity-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantity-btn:hover {
+            background: var(--border);
+        }
+        
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .quantity-value {
+            min-width: 48px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .label-required {
+            color: #ef4444;
+            margin-left: 0.25rem;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .input-hint {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.375rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        /* Resumen del Pedido */
+        .order-summary {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-title {
+            font-weight: 700;
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            color: var(--text-secondary);
+        }
+        
+        .summary-item.total {
+            border-top: 1px solid var(--border);
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .summary-item-label {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .summary-item-detail {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .summary-item-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Botones */
+        .btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-icon {
+            font-size: 1.25rem;
+        }
+        
+        /* Trust Badges */
+        .trust-badges {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-align: center;
+            flex-wrap: wrap;
+        }
+        
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .trust-icon {
+            color: var(--success);
+        }
+        
+        /* Error Messages */
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .error.active {
+            display: block;
+        }
+        
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loading-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 1rem;
+            margin-top: 4rem;
+        }
+        
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        @media (min-width: 768px) {
+            .footer-content {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">🎫</div>
+                <span>TicketFlow</span>
+            </a>
+            <a href="index.html" class="back-btn">
+                <span>←</span>
+                Volver
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="index.html">Inicio</a>
+            <span>/</span>
+            <span>Comprar Entrada</span>
+        </div>
+
+        <!-- Page Title -->
+        <h1 class="page-title">Comprar Entrada</h1>
+        <p class="page-subtitle">Completa los siguientes pasos para asegurar tu lugar</p>
+
+        <!-- Checkout Grid -->
+        <div class="checkout-grid">
+            <!-- Formulario -->
+            <div>
+                <div class="purchase-form">
+                    <div id="error" class="error"></div>
+                    
+                    <form id="purchaseForm">
+                        <!-- Sección 1: Tipo de Entrada -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <span class="section-number">1</span>
+                                Selecciona tu entrada
+                            </div>
+                            <p class="section-description">Elige el tipo de entrada que mejor se adapte a ti</p>
+                            
+                            <div class="ticket-types">
+                                <label class="ticket-option selected" onclick="selectTicket(this, 25000)">
+                                    <input type="radio" name="tipoEntrada" value="general" checked data-price="25000">
+                                    <div class="ticket-header">
+                                        <div class="ticket-icon general">👥</div>
+                                        <div style="flex: 1;">
+                                            <div class="ticket-name">Anticipadas</div>
+                                        </div>
+                                        <div class="ticket-price">$25.000</div>
+                                    </div>
+                                    <ul class="ticket-features">
+                                        <li>Acceso al evento completo</li>
+                                        <li>Entrada digital con código QR</li>
+                                        <li>Confirmación por email</li>
+                                    </ul>
+                               
+                                
+                                
+                            </div>
+                        </div>
+
+                        <!-- Sección 2: Cantidad -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <span class="section-number">2</span>
+                                Cantidad de entradas
+                            </div>
+                            <p class="section-description">Máximo 10 entradas por compra</p>
+                            
+                            <div class="quantity-selector">
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-btn" onclick="changeQuantity(-1)">−</button>
+                                    <input type="number" id="cantidad" name="cantidad" class="quantity-value" value="1" min="1" max="10" readonly>
+                                    <button type="button" class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                                </div>
+                                <span style="color: var(--text-secondary); font-size: 0.875rem;">entradas</span>
+                            </div>
+                        </div>
+
+                        <!-- Sección 3: Datos Personales -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <span class="section-number">3</span>
+                                Datos personales
+                            </div>
+                            <p class="section-description">Los datos serán usados para generar tu entrada</p>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="nombre">
+                                        Nombre
+                                        <span class="label-required">*</span>
+                                    </label>
+                                    <input type="text" id="nombre" name="nombre" required placeholder="Ej: Juan">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="apellido">
+                                        Apellido
+                                        <span class="label-required">*</span>
+                                    </label>
+                                    <input type="text" id="apellido" name="apellido" required placeholder="Ej: Pérez">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">
+                                    Email
+                                    <span class="label-required">*</span>
+                                </label>
+                                <input type="email" id="email" name="email" required placeholder="ejemplo@email.com">
+                                <p class="input-hint">Recibirás tu entrada en este correo</p>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="telefono">
+                                        Teléfono
+                                        <span class="label-required">*</span>
+                                    </label>
+                                    <input type="tel" id="telefono" name="telefono" required placeholder="+54 11 1234-5678">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="dni">
+                                        DNI / Documento
+                                        <span class="label-required">*</span>
+                                    </label>
+                                    <input type="text" id="dni" name="dni" required placeholder="12.345.678">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen del Pedido -->
+                        <div class="order-summary">
+                            <div class="summary-title">Resumen del pedido</div>
+                            <div class="summary-item">
+                                <div class="summary-item-label">
+                                    <span id="summaryTicketType">Entrada General</span>
+                                    <span class="summary-item-detail" id="summaryQuantity">1 entrada</span>
+                                </div>
+                                <span class="summary-item-value" id="summarySubtotal">$25.000</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Servicio</span>
+                                <span class="summary-item-value" id="summaryService">$2.500</span>
+                            </div>
+                            <div class="summary-item total">
+                                <span>Total</span>
+                                <span id="summaryTotal">$27.500</span>
+                            </div>
+                        </div>
+
+                        <!-- Botón de Compra -->
+                        <button type="submit" class="btn" id="submitBtn">
+                            <span>Proceder al pago</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+
+                        <!-- Trust Badges -->
+                        <div class="trust-badges">
+                            <div class="trust-badge">
+                                <span class="trust-icon">🔒</span>
+                                <span>Pago seguro</span>
+                            </div>
+                            <div class="trust-badge">
+                                <span class="trust-icon">✓</span>
+                                <span>Mercado Pago</span>
+                            </div>
+                            <div class="trust-badge">
+                                <span class="trust-icon">📱</span>
+                                <span>QR instantáneo</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resumen del Evento (Sidebar) -->
+            <aside>
+                <div class="event-summary">
+                    <div class="event-header">
+                        <span class="event-icon">🎉</span>
+                        <span class="event-badge">Disponible</span>
+                        <h2 class="event-title-summary">EKKLESIA 2026</h2>
+                    </div>
+                    <div class="event-details">
+                        <div class="event-detail-item">
+                            <span class="event-detail-icon">📅</span>
+                            <div class="event-detail-content">
+                                <p class="event-detail-label">Fecha</p>
+                                <p class="event-detail-value">Sábado 1 de Mayo, 2026</p>
+                            </div>
+                        </div>
+                        <div class="event-detail-item">
+                            <span class="event-detail-icon">⏰</span>
+                            <div class="event-detail-content">
+                                <p class="event-detail-label">Hora</p>
+                                <p class="event-detail-value">08:00 HS</p>
+                            </div>
+                        </div>
+                        <div class="event-detail-item">
+                            <span class="event-detail-icon">📍</span>
+                            <div class="event-detail-content">
+                                <p class="event-detail-label">Ubicación</p>
+                                <p class="event-detail-value">Club Alemán</p>
+                            </div>
+                        </div>
+                        <div class="event-detail-item">
+                            <span class="event-detail-icon">🎫</span>
+                            <div class="event-detail-content">
+                                <p class="event-detail-label">Tipo de entrada</p>
+                                <p class="event-detail-value">Digital con QR</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p style="font-weight: 600; margin-bottom: 0.5rem;">Procesando tu solicitud...</p>
+            <p style="color: var(--text-secondary); font-size: 0.875rem;">Esto puede tomar unos momentos</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">🎫</div>
+                <span>TicketFlow</span>
+            </a>
+            <p class="footer-text">
+                2026 TicketFlow. Contacto: matiasmantaras220603@gmail.com.
+                telefono: +54 3754498862.
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script>
+        let currentPrice = 25000;
+        let currentQuantity = 1;
+        const serviceCharge = 0.1; // 10% cargo por servicio
+
+        // Seleccionar tipo de entrada
+        function selectTicket(element, price) {
+            document.querySelectorAll('.ticket-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            currentPrice = price;
+            updateSummary();
+        }
+
+        // Cambiar cantidad
+        function changeQuantity(delta) {
+            const input = document.getElementById('cantidad');
+            let newValue = parseInt(input.value) + delta;
+            
+            if (newValue >= 1 && newValue <= 10) {
+                input.value = newValue;
+                currentQuantity = newValue;
+                updateSummary();
+            }
+        }
+
+        // Actualizar resumen
+        function updateSummary() {
+            const ticketType = document.querySelector('input[name="tipoEntrada"]:checked');
+            const ticketName = ticketType.parentElement.querySelector('.ticket-name').textContent;
+            
+            const subtotal = currentPrice * currentQuantity;
+            const service = Math.round(subtotal * serviceCharge);
+            const total = subtotal + service;
+
+            document.getElementById('summaryTicketType').textContent = `Entrada ${ticketName}`;
+            document.getElementById('summaryQuantity').textContent = `${currentQuantity} ${currentQuantity === 1 ? 'entrada' : 'entradas'}`;
+            document.getElementById('summarySubtotal').textContent = `$${subtotal.toLocaleString('es-AR')}`;
+            document.getElementById('summaryService').textContent = `$${service.toLocaleString('es-AR')}`;
+            document.getElementById('summaryTotal').textContent = `$${total.toLocaleString('es-AR')}`;
+        }
+
+        // Manejar envío del formulario
+        const form = document.getElementById('purchaseForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const errorDiv = document.getElementById('error');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Ocultar errores previos
+            errorDiv.classList.remove('active');
+            
+            // Obtener datos del formulario
+            const formData = {
+                nombre: document.getElementById('nombre').value + ' ' + document.getElementById('apellido').value,
+                email: document.getElementById('email').value,
+                telefono: document.getElementById('telefono').value,
+                dni: document.getElementById('dni').value,
+                cantidad: currentQuantity,
+                tipoEntrada: document.querySelector('input[name="tipoEntrada"]:checked').value
+            };
+            
+            // Mostrar loading
+            submitBtn.disabled = true;
+            loadingOverlay.classList.add('active');
+            
+            try {
+                // Crear preferencia de pago
+                const response = await fetch('/create-preference', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Guardar ticketId en localStorage
+                    localStorage.setItem('ticketId', data.ticketId);
+                    
+                    // Redirigir a Mercado Pago
+                    window.location.href = data.init_point;
+                } else {
+                    throw new Error(data.error || 'Error al procesar el pago');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorDiv.textContent = error.message;
+                errorDiv.classList.add('active');
+                submitBtn.disabled = false;
+                loadingOverlay.classList.remove('active');
+            }
+        });
+
+        // Inicializar resumen
+        updateSummary();
+    </script>
+</body>
+</html>

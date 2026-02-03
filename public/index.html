@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicketFlow - Venta de Entradas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #151515;
+            --border: #262626;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1a1;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            background-color: var(--bg-primary);
+        }
+        
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            border-bottom: 1px solid var(--border);
+            padding: 5rem 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.1), transparent 50%);
+        }
+        
+        .hero-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .hero-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            max-width: 800px;
+        }
+        
+        .hero-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            line-height: 1.7;
+        }
+        
+        .hero-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-icon {
+            color: var(--success);
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 4rem 1rem;
+        }
+        
+        .section-header {
+            margin-bottom: 2.5rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .section-subtitle {
+            color: var(--text-secondary);
+        }
+        
+        /* Event Card */
+        .event-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.3s;
+            cursor: pointer;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
+        }
+        
+        .event-image {
+            width: 100%;
+            height: 280px;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .event-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 2rem;
+        }
+        
+        .event-image::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.8));
+            pointer-events: none;
+        }
+        
+        .event-image-content {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            right: 1.5rem;
+            z-index: 1;
+        }
+        
+        .event-content {
+            padding: 2rem;
+        }
+        
+        .event-badge {
+            display: inline-block;
+            padding: 0.375rem 0.875rem;
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .event-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            line-height: 1.2;
+        }
+        
+        .event-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .event-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+        
+        .event-info-icon {
+            width: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .event-price-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .event-price-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .event-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--success);
+            line-height: 1;
+        }
+        
+        .event-btn {
+            padding: 0.875rem 2rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .event-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        /* Footer */\n        footer {\n            border-top: 1px solid var(--border);\n            padding: 2rem 1rem;\n            margin-top: 4rem;\n        }\n        \n        .footer-content {\n            max-width: 1280px;\n            margin: 0 auto;\n            display: flex;\n            flex-direction: column;\n            align-items: center;\n            justify-content: space-between;\n            gap: 1rem;\n            text-align: center;\n        }\n        \n        .footer-text {\n            color: var(--text-secondary);\n            font-size: 0.875rem;\n        }\n        \n        @media (min-width: 768px) {\n            h1 {\n                font-size: 4rem;\n            }\n            \n            .footer-content {\n                flex-direction: row;\n            }\n        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🎫</div>
+                <span>TicketFlow</span>
+            </div>
+            <nav style="display: flex; gap: 2rem; align-items: center;">
+                <a href="/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 0.2s;">Eventos</a>
+                <a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 0.2s;">Mis Entradas</a>
+                <a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 0.2s;">FAQ</a>
+            </nav>
+            <a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 0.2s;">Iniciar Sesión</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <p class="hero-label">Plataforma de Tickets</p>
+            <h1>Compra tus entradas de forma segura y sencilla</h1>
+            <p class="hero-description">
+                Los mejores eventos del país en un solo lugar. Paga con Mercado Pago y recibe tu entrada con código QR al instante.
+            </p>
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <span class="feature-icon">✓</span>
+                    <span>Pago seguro</span>
+                </div>
+                <div class="hero-feature">
+                    <span class="feature-icon">✓</span>
+                    <span>QR instantáneo</span>
+                </div>
+                <div class="hero-feature">
+                    <span class="feature-icon">✓</span>
+                    <span>Mercado Pago</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="section-header">
+            <h2 class="section-title">Evento Destacado</h2>
+            <p class="section-subtitle">¡No te pierdas esta increíble experiencia!</p>
+        </div>
+
+        <!-- Event Card -->
+        <div class="event-card" onclick="window.location.href='comprar.html'">
+            <div class="event-image">
+                <img src="ekklesia-logo.svg" alt="EKKLESIA 2026">
+                <div class="event-image-content">
+                    <span class="event-badge">Disponible</span>
+                </div>
+            </div>
+            <div class="event-content">
+                <h3 class="event-title">EKKLESIA 2026</h3>
+                <div class="event-info">
+                    <div class="event-info-item">
+                        <span class="event-info-icon">📅</span>
+                        <span>Sábado 1 de Mayo, 2026</span>
+                    </div>
+                    <div class="event-info-item">
+                        <span class="event-info-icon">📍</span>
+                        <span>Club Aleman</span>
+                    </div>
+                    <div class="event-info-item">
+                        <span class="event-info-icon">⏰</span>
+                        <span>08:00 HS</span>
+                    </div>
+                </div>
+                <div class="event-price-section">
+                    <div>
+                        <p class="event-price-label">Desde</p>
+                        <p class="event-price">$25000</p>
+                    </div>
+                    <a href="comprar.html" class="event-btn" style="text-decoration: none;" onclick="event.stopPropagation();">
+                        Comprar entradas
+                        <span style="font-size: 1.25rem;">→</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="logo">
+                <div class="logo-icon">🎫</div>
+                <span>TicketFlow</span>
+            </div>
+            <p class="footer-text">
+                2026 TicketFlow. Todos los derechos reservados.
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
