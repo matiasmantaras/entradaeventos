@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validar Entradas - EKKLESIA 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #151515;
+            --border: #262626;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--accent);
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .scanner-section {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .scanner-icon {
+            text-align: center;
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-validate {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-validate:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-validate:disabled {
+            background-color: var(--border);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-clear {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-clear:hover {
+            background-color: var(--border);
+        }
+
+        .result {
+            display: none;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--success);
+        }
+
+        .result.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--error);
+        }
+
+        .result.warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border: 2px solid var(--warning);
+        }
+
+        .result-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .result-message {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result.success .result-message {
+            color: var(--success);
+        }
+
+        .result.error .result-message {
+            color: var(--error);
+        }
+
+        .result.warning .result-message {
+            color: var(--warning);
+        }
+
+        .ticket-details {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .instructions {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .instructions h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: var(--text-secondary);
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎟️ Validación de Entradas</h1>
+            <p class="subtitle">EKKLESIA 2026 - Control de acceso</p>
+        </header>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="color: var(--text-secondary);">Validando entrada...</p>
+        </div>
+
+        <div class="result" id="result">
+            <div class="result-icon" id="resultIcon"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <div class="ticket-details" id="ticketDetails" style="display: none;"></div>
+        </div>
+
+        <div class="scanner-section">
+            <div class="scanner-icon">📱</div>
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 20px;">Escanear código QR</h2>
+            
+            <textarea 
+                id="qrInput" 
+                placeholder="Pegá aquí el contenido del código QR escaneado o ingresalo manualmente..."
+                autofocus
+            ></textarea>
+
+            <div class="actions">
+                <button class="btn-validate" id="validateBtn" onclick="validarTicket()">
+                    ✓ Validar Entrada
+                </button>
+                <button class="btn-clear" onclick="limpiarFormulario()">
+                    ✕ Limpiar
+                </button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Instrucciones:</h3>
+            <ol>
+                <li>Solicitá al asistente que muestre su código QR</li>
+                <li>Escaneá el QR con tu dispositivo</li>
+                <li>Pegá el contenido en el campo de texto</li>
+                <li>Hacé clic en "Validar Entrada"</li>
+                <li>Si es válido, marcá como ingresado y permitir el acceso</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const qrInput = document.getElementById('qrInput');
+        const validateBtn = document.getElementById('validateBtn');
+        const result = document.getElementById('result');
+        const resultIcon = document.getElementById('resultIcon');
+        const resultMessage = document.getElementById('resultMessage');
+        const ticketDetails = document.getElementById('ticketDetails');
+        const loading = document.getElementById('loading');
+
+        // Auto-focus en el input
+        qrInput.focus();
+
+        // Detectar Enter para validar
+        qrInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                validarTicket();
+            }
+        });
+
+        async function validarTicket() {
+            const qrData = qrInput.value.trim();
+            
+            if (!qrData) {
+                mostrarError('Por favor, ingresá el código QR');
+                return;
+            }
+
+            // Mostrar loading
+            loading.classList.add('active');
+            result.style.display = 'none';
+            validateBtn.disabled = true;
+
+            try {
+                const response = await fetch('/validate-ticket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ticketData: qrData })
+                });
+
+                const data = await response.json();
+                
+                loading.classList.remove('active');
+                validateBtn.disabled = false;
+
+                if (data.valido) {
+                    mostrarExito(data.mensaje, data.ticket);
+                    // Auto-limpiar después de 3 segundos
+                    setTimeout(() => {
+                        limpiarFormulario();
+                    }, 3000);
+                } else {
+                    mostrarError(data.mensaje, data.fechaUso);
+                }
+
+            } catch (error) {
+                loading.classList.remove('active');
+                validateBtn.disabled = false;
+                mostrarError('Error al validar el ticket. Verificá tu conexión.');
+                console.error('Error:', error);
+            }
+        }
+
+        function mostrarExito(mensaje, ticket) {
+            result.className = 'result success';
+            result.style.display = 'block';
+            resultIcon.textContent = '✅';
+            resultMessage.textContent = mensaje;
+
+            if (ticket) {
+                ticketDetails.style.display = 'block';
+                ticketDetails.innerHTML = `
+                    <div class="detail-row">
+                        <span class="detail-label">Nombre:</span>
+                        <span class="detail-value">${ticket.nombre}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">DNI:</span>
+                        <span class="detail-value">${ticket.dni}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Tipo:</span>
+                        <span class="detail-value">${ticket.tipoEntrada === 'general' ? 'Anticipada' : ticket.tipoEntrada}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Cantidad:</span>
+                        <span class="detail-value">${ticket.cantidad}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Compra:</span>
+                        <span class="detail-value">${new Date(ticket.fechaCompra).toLocaleDateString('es-AR')}</span>
+                    </div>
+                `;
+            }
+
+            // Vibrar si es móvil
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]);
+            }
+        }
+
+        function mostrarError(mensaje, fechaUso) {
+            result.className = 'result error';
+            result.style.display = 'block';
+            resultIcon.textContent = '❌';
+            resultMessage.textContent = mensaje;
+
+            if (fechaUso) {
+                ticketDetails.style.display = 'block';
+                ticketDetails.innerHTML = `
+                    <div class="detail-row">
+                        <span class="detail-label">Fecha de uso:</span>
+                        <span class="detail-value">${new Date(fechaUso).toLocaleString('es-AR')}</span>
+                    </div>
+                `;
+            } else {
+                ticketDetails.style.display = 'none';
+            }
+
+            // Vibrar si es móvil
+            if (navigator.vibrate) {
+                navigator.vibrate(500);
+            }
+        }
+
+        function limpiarFormulario() {
+            qrInput.value = '';
+            result.style.display = 'none';
+            ticketDetails.style.display = 'none';
+            qrInput.focus();
+        }
+
+        // Auto-focus cuando se hace clic en cualquier parte
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('button') && !e.target.closest('textarea')) {
+                qrInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>

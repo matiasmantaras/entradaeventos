@@ -368,6 +368,10 @@
                         <span class="event-info-icon">⏰</span>
                         <span>08:00 HS</span>
                     </div>
+                    <div class="event-info-item" id="stockInfo" style="color: var(--success);">
+                        <span class="event-info-icon">🎟️</span>
+                        <span id="stockText">Cargando stock...</span>
+                    </div>
                 </div>
                 <div class="event-price-section">
                     <div>
@@ -395,5 +399,34 @@
             </p>
         </div>
     </footer>
+
+    <script>
+        // Cargar stock disponible
+        async function cargarStock() {
+            try {
+                const response = await fetch('/api/stock');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stockInfo = document.getElementById('stockInfo');
+                    const stockText = document.getElementById('stockText');
+                    
+                    if (data.stockRestante > 0) {
+                        stockText.textContent = `${data.stockRestante} entradas disponibles`;
+                        stockInfo.style.color = data.stockRestante < 50 ? 'var(--warning)' : 'var(--success)';
+                    } else {
+                        stockText.textContent = 'AGOTADO';
+                        stockInfo.style.color = '#ef4444';
+                    }
+                }
+            } catch (error) {
+                console.error('Error al cargar stock:', error);
+                document.getElementById('stockText').textContent = 'Stock no disponible';
+            }
+        }
+
+        // Cargar stock al iniciar
+        document.addEventListener('DOMContentLoaded', cargarStock);
+    </script>
 </body>
 </html>

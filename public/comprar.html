@@ -151,29 +151,39 @@
         }
         
         .event-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             padding: 2rem;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
         
         .event-header::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.6));
+            background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.8));
+            pointer-events: none;
         }
         
         .event-icon {
-            font-size: 3rem;
+            width: 100%;
+            max-width: 200px;
+            height: auto;
             margin-bottom: 1rem;
             display: block;
+            position: relative;
+            z-index: 1;
         }
         
         .event-badge {
             display: inline-block;
             padding: 0.375rem 0.875rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(59, 130, 246, 0.3);
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 600;
@@ -189,6 +199,7 @@
             margin-top: 1rem;
             position: relative;
             z-index: 1;
+            color: #1a1a1a;
         }
         
         .event-details {
@@ -700,6 +711,15 @@
         <h1 class="page-title">Comprar Entrada</h1>
         <p class="page-subtitle">Completa los siguientes pasos para asegurar tu lugar</p>
 
+        <!-- Stock Alert -->
+        <div id="stockAlert" style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin: 1.5rem 0; display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.5rem;">🎟️</span>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; margin-bottom: 0.25rem;" id="stockText">Cargando disponibilidad...</div>
+                <div style="color: var(--text-secondary); font-size: 0.875rem;">Actualizado en tiempo real</div>
+            </div>
+        </div>
+
         <!-- Checkout Grid -->
         <div class="checkout-grid">
             <!-- Formulario -->
@@ -821,7 +841,7 @@
                             </div>
                             <div class="summary-item">
                                 <span>Servicio</span>
-                                <span class="summary-item-value" id="summaryService">$2.500</span>
+                                <span class="summary-item-value" id="summaryService">$1.250</span>
                             </div>
                             <div class="summary-item total">
                                 <span>Total</span>
@@ -858,7 +878,7 @@
             <aside>
                 <div class="event-summary">
                     <div class="event-header">
-                        <span class="event-icon">🎉</span>
+                        <img src="ekklesia-logo.svg" alt="EKKLESIA 2026" class="event-icon">
                         <span class="event-badge">Disponible</span>
                         <h2 class="event-title-summary">EKKLESIA 2026</h2>
                     </div>
@@ -881,7 +901,7 @@
                             <span class="event-detail-icon">📍</span>
                             <div class="event-detail-content">
                                 <p class="event-detail-label">Ubicación</p>
-                                <p class="event-detail-value">Club Alemán</p>
+                                <p class="event-detail-value">Club Alemán / Hilaria Maidana 277</p>
                             </div>
                         </div>
                         <div class="event-detail-item">
@@ -896,6 +916,8 @@
             </aside>
         </div>
     </main>
+
+
 
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -1006,7 +1028,7 @@
                     // Guardar ticketId en localStorage
                     localStorage.setItem('ticketId', data.ticketId);
                     
-                    // Redirigir a Mercado Pago
+                    // Redirigir directamente a Mercado Pago
                     window.location.href = data.init_point;
                 } else {
                     throw new Error(data.error || 'Error al procesar el pago');
@@ -1019,6 +1041,49 @@
                 loadingOverlay.classList.remove('active');
             }
         });
+
+        // No se necesita lógica del modal - redirección directa
+
+        // Cargar stock disponible
+        async function cargarStock() {
+            try {
+                const response = await fetch('/api/stock');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stockAlert = document.getElementById('stockAlert');
+                    const stockText = document.getElementById('stockText');
+                    
+                    if (data.stockRestante > 0) {
+                        stockText.textContent = `¡${data.stockRestante} entradas disponibles de ${data.stockTotal}!`;
+                        
+                        if (data.stockRestante < 50) {
+                            stockAlert.style.borderColor = 'var(--warning)';
+                            stockAlert.style.background = 'rgba(245, 158, 11, 0.1)';
+                            stockText.style.color = 'var(--warning)';
+                        } else {
+                            stockAlert.style.borderColor = 'var(--success)';
+                            stockAlert.style.background = 'rgba(16, 185, 129, 0.1)';
+                            stockText.style.color = 'var(--success)';
+                        }
+                    } else {
+                        stockText.textContent = '¡ENTRADAS AGOTADAS!';
+                        stockAlert.style.borderColor = '#ef4444';
+                        stockAlert.style.background = 'rgba(239, 68, 68, 0.1)';
+                        stockText.style.color = '#ef4444';
+                        
+                        // Deshabilitar formulario
+                        document.getElementById('purchaseForm').style.opacity = '0.5';
+                        document.getElementById('purchaseForm').style.pointerEvents = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error al cargar stock:', error);
+            }
+        }
+
+        // Cargar stock al iniciar
+        cargarStock();
 
         // Inicializar resumen
         updateSummary();
