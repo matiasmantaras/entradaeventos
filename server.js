@@ -269,9 +269,29 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Ruta principal
+// Rutas de páginas HTML
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/comprar.html', (req, res) => {
+    res.sendFile(__dirname + '/public/comprar.html');
+});
+
+app.get('/success.html', (req, res) => {
+    res.sendFile(__dirname + '/public/success.html');
+});
+
+app.get('/login.html', (req, res) => {
+    res.sendFile(__dirname + '/public/login.html');
+});
+
+app.get('/admin.html', (req, res) => {
+    res.sendFile(__dirname + '/public/admin.html');
+});
+
+app.get('/validar.html', (req, res) => {
+    res.sendFile(__dirname + '/public/validar.html');
 });
 
 // Crear preferencia de pago CON VALIDACIÓN
@@ -347,9 +367,9 @@ app.post('/create-preference', [
                     email: email
                 },
                 back_urls: {
-                    success: `http://localhost:${PORT}/success`,
-                    failure: `http://localhost:${PORT}/failure`,
-                    pending: `http://localhost:${PORT}/pending`
+                    success: `${process.env.BASE_URL || `http://localhost:${PORT}`}/success`,
+                    failure: `${process.env.BASE_URL || `http://localhost:${PORT}`}/failure`,
+                    pending: `${process.env.BASE_URL || `http://localhost:${PORT}`}/pending`
                 },
                 payment_methods: {
                     excluded_payment_types: [
