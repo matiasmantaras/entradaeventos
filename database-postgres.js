@@ -8,8 +8,11 @@ const pool = new Pool({
         rejectUnauthorized: false
     },
     max: 1, // Vercel serverless: 1 conexión por función
-    idleTimeoutMillis: 10000,
-    connectionTimeoutMillis: 10000
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 30000,
+    allowExitOnIdle: true, // Permite cerrar el proceso si no hay conexiones activas
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000
 });
 
 // Manejo de errores del pool
