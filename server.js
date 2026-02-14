@@ -21,8 +21,10 @@ const { initDatabase, ticketDB, configDB } = require('./database-postgres');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Inicializar base de datos
-initDatabase();
+// Inicializar base de datos (async pero no bloqueante)
+initDatabase().catch(err => {
+    console.error('⚠️ Error al inicializar BD, pero el servidor continúa:', err.message);
+});
 
 // 🛡️ Seguridad: Helmet (protege headers HTTP)
 app.use(helmet({
@@ -267,7 +269,7 @@ async function enviarTicket(ticket) {
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static(__dirname + '/public'));
 
 // Rutas de páginas HTML
 app.get('/', (req, res) => {

@@ -6,15 +6,39 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
         rejectUnauthorized: false
-    }
+    },
+    max: 1, // Vercel serverless: 1 conexión por función
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 10000
 });
+
+// Manejo de errores del pool
+pool.on('error', (err) => {
+    console.error('❌ Error en el pool de PostgreSQL:', err);
+});
+
+pool.on('connect', () => {
+    console.log('🔗 Nueva conexión al pool de PostgreSQL');
+});
+
+pool.on('remove', () => {
+    console.log('🔌 Conexión removida del pool');
+});
+
+// Control para evitar múltiples inicializaciones
+let isInitialized = false;
 
 // Inicializar base de datos con tablas
 async function initDatabase() {
-    const client = await pool.connect();
-    
+    if (isInitialized) {
+        console.log('✅ Base de datos ya inicializada (usando cache)');
+        return;
+    }
+
+    let client;
     try {
         console.log('🔄 Inicializando base de datos PostgreSQL...');
+        client = await pool.connect();
         
         // Crear tabla de configuración
         await client.query(`
@@ -74,12 +98,16 @@ async function initDatabase() {
         }
         
         console.log('✅ Base de datos PostgreSQL lista');
+        isInitialized = true;
         
     } catch (error) {
         console.error('❌ Error al inicializar base de datos:', error);
-        throw error;
+        isInitialized = false; // Permitir reintentos
+        // No lanzar error para no romper Vercel
     } finally {
-        client.release();
+        if (client) {
+            client.release();
+        }
     }
 }
 
