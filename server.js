@@ -715,6 +715,66 @@ app.get('/api/stock', async (req, res) => {
     }
 });
 
+// API: Reenviar ticket por email
+app.post('/api/resend-ticket', async (req, res) => {
+    try {
+        const { ticketId, email } = req.body;
+        
+        if (!ticketId || !email) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Se requiere ticketId y email' 
+            });
+        }
+        
+        // Obtener ticket
+        const ticket = await ticketDB.getById(ticketId);
+        
+        if (!ticket) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Ticket no encontrado' 
+            });
+        }
+        
+        // Verificar que el email coincida
+        if (ticket.email.toLowerCase() !== email.toLowerCase()) {
+            return res.status(403).json({ 
+                success: false, 
+                error: 'El email no coincide con el ticket' 
+            });
+        }
+        
+        // Verificar que el ticket esté pagado
+        if (ticket.estado !== 'pagado') {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'El pago aún no ha sido confirmado. Por favor espera unos minutos.' 
+            });
+        }
+        
+        // Reenviar email
+        const enviado = await enviarTicketPorEmail(ticket);
+        
+        if (enviado) {
+            console.log(`📧 Email reenviado exitosamente para ticket ${ticketId}`);
+            res.json({ 
+                success: true, 
+                message: 'Email reenviado correctamente' 
+            });
+        } else {
+            throw new Error('Error al enviar email');
+        }
+        
+    } catch (error) {
+        console.error('Error al reenviar ticket:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al reenviar el email. Intenta nuevamente en unos momentos.' 
+        });
+    }
+});
+
 // ========================================
 // 🔐 AUTENTICACIÓN DE ADMINISTRADOR
 // ========================================

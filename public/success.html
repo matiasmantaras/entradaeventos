@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>¡Compra Exitosa! - TicketFlow</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -439,10 +440,18 @@
         <div class="email-card">
             <div class="email-icon">✉️</div>
             <div class="email-content">
-                <p class="email-label">Confirmación enviada</p>
-                <p class="email-address" id="emailDisplay">Cargando...</p>
+                <p class="email-label">Confirmación</p>
+                <p class="email-address" id="emailDisplay">Tu entrada está siendo procesada...</p>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;" id="emailStatus">
+                    El email con tu QR se enviará automáticamente cuando se confirme el pago
+                </p>
             </div>
         </div>
+        
+        <!-- Botón Reenviar Email -->
+        <button onclick="resendEmail()" id="resendBtn" style="margin-top: 1rem; padding: 0.75rem 1.5rem; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: none;">
+            📧 Reenviar email
+        </button>
     </section>
 
     <main class="main-content">
@@ -569,7 +578,98 @@
     </main>
 
     <script>
-        let qrImageData = '';
+        let currentTicketId = null;
+        let currentEmail = null;
+        
+        // Generar QR inmediatamente en el cliente
+        async function generateQRImmediate(ticketId) {
+            try {
+                // Datos del QR (mismo formato que el servidor)
+                const qrData = JSON.stringify({
+                    ticketId: ticketId,
+                    fecha: new Date().toISOString()
+                });
+                
+                // Generar QR en canvas
+                const canvas = document.createElement('canvas');
+                await QRCode.toCanvas(canvas, qrData, {
+                    width: 280,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                });
+                
+                // Convertir a imagen
+                const qrImage = canvas.toDataURL('image/png');
+                document.getElementById('qrCode').src = qrImage;
+                
+                return qrImage;
+            } catch (error) {
+                console.error('Error al generar QR:', error);
+                throw error;
+            }
+        }
+        
+        // Obtener información del ticket
+        async function getTicketInfo(ticketId) {
+            try {
+                const response = await fetch(`/ticket/${ticketId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Ticket no encontrado');
+                }
+                
+                const ticket = await response.json();
+                return ticket;
+            } catch (error) {
+                console.error('Error al obtener ticket:', error);
+                return null;
+            }
+        }
+        
+        // Reenviar email
+        async function resendEmail() {
+            if (!currentTicketId || !currentEmail) {
+                alert('No se pudo obtener la información del ticket');
+                return;
+            }
+            
+            const btn = document.getElementById('resendBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Reenviando...';
+            
+            try {
+                const response = await fetch('/api/resend-ticket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ticketId: currentTicketId,
+                        email: currentEmail
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ Email reenviado correctamente a ' + currentEmail);
+                    document.getElementById('emailStatus').textContent = '✓ Email enviado a tu correo';
+                    document.getElementById('emailStatus').style.color = 'var(--success)';
+                } else {
+                    alert('❌ ' + (data.error || 'Error al reenviar email'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al reenviar email. Intenta nuevamente.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
         
         async function loadTicket() {
             try {
@@ -584,67 +684,60 @@
                     throw new Error('No se encontró el ID del ticket');
                 }
                 
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                currentTicketId = ticketId;
                 
-                let retries = 0;
-                let maxRetries = 5;
-                let qrData = null;
+                // ✨ GENERAR QR INMEDIATAMENTE (sin esperar webhook)
+                console.log('🎫 Generando QR inmediato para ticket:', ticketId);
+                await generateQRImmediate(ticketId);
                 
-                while (retries < maxRetries) {
-                    try {
-                        const response = await fetch(`/generate-qr/${ticketId}`);
-                        
-                        if (response.ok) {
-                            qrData = await response.json();
-                            break;
-                        } else if (response.status === 400) {
-                            retries++;
-                            if (retries < maxRetries) {
-                                await new Promise(resolve => setTimeout(resolve, 2000));
-                            }
-                        } else {
-                            throw new Error('Error al generar el QR');
-                        }
-                    } catch (error) {
-                        retries++;
-                        if (retries >= maxRetries) throw error;
-                        await new Promise(resolve => setTimeout(resolve, 2000));
+                // Intentar obtener info del ticket
+                const ticket = await getTicketInfo(ticketId);
+                
+                if (ticket) {
+                    currentEmail = ticket.email;
+                    
+                    // Mostrar información
+                    document.getElementById('emailDisplay').textContent = ticket.email;
+                    document.getElementById('nombre').textContent = ticket.nombre;
+                    document.getElementById('nombreTicket').textContent = ticket.nombre;
+                    document.getElementById('tipoEntrada').textContent = ticket.tipoEntrada.toUpperCase();
+                    document.getElementById('cantidad').textContent = ticket.cantidad;
+                    document.getElementById('ticketId').textContent = ticket.id;
+                    document.getElementById('ticketIdDisplay').textContent = ticket.id;
+                    
+                    // Verificar estado del pago
+                    if (ticket.estado === 'pagado') {
+                        document.getElementById('emailStatus').textContent = '✓ Email enviado a tu correo';
+                        document.getElementById('emailStatus').style.color = 'var(--success)';
+                    } else {
+                        document.getElementById('emailStatus').textContent = '⏳ El email se enviará cuando se confirme el pago (puede tardar hasta 2 minutos)';
+                        // Mostrar botón de reenviar después de 30 segundos
+                        setTimeout(() => {
+                            document.getElementById('resendBtn').style.display = 'inline-block';
+                        }, 30000);
+                    }
+                    
+                    // Aplicar estilos según tipo de ticket
+                    const ticketCard = document.getElementById('ticketCard');
+                    const ticketBadge = document.getElementById('ticketBadge');
+                    const ticketIcon = document.getElementById('ticketIcon');
+                    
+                    if (ticket.tipoEntrada === 'vip') {
+                        ticketCard.classList.add('vip');
+                        ticketBadge.classList.add('vip');
+                        ticketIcon.textContent = '👑';
+                    } else if (ticket.tipoEntrada === 'premium') {
+                        ticketCard.classList.add('premium');
+                        ticketBadge.classList.add('premium');
+                        ticketIcon.textContent = '⭐';
                     }
                 }
                 
-                if (!qrData) {
-                    throw new Error('El pago está siendo procesado. Por favor, revisa tu email en unos minutos.');
-                }
-                
-                document.getElementById('emailDisplay').textContent = `Hemos enviado tus entradas a ${qrData.ticket.email}`;
-                document.getElementById('nombre').textContent = qrData.ticket.nombre;
-                document.getElementById('nombreTicket').textContent = qrData.ticket.nombre;
-                document.getElementById('tipoEntrada').textContent = qrData.ticket.tipoEntrada.toUpperCase();
-                document.getElementById('cantidad').textContent = qrData.ticket.cantidad;
-                document.getElementById('ticketId').textContent = qrData.ticket.id;
-                document.getElementById('ticketIdDisplay').textContent = qrData.ticket.id;
-                
-                // Aplicar estilos según tipo de ticket
-                const ticketCard = document.getElementById('ticketCard');
-                const ticketBadge = document.getElementById('ticketBadge');
-                const ticketIcon = document.getElementById('ticketIcon');
-                
-                if (qrData.ticket.tipoEntrada === 'vip') {
-                    ticketCard.classList.add('vip');
-                    ticketBadge.classList.add('vip');
-                    ticketIcon.textContent = '👑';
-                } else if (qrData.ticket.tipoEntrada === 'premium') {
-                    ticketCard.classList.add('premium');
-                    ticketBadge.classList.add('premium');
-                    ticketIcon.textContent = '⭐';
-                }
-                
-                qrImageData = qrData.qr;
-                document.getElementById('qrCode').src = qrData.qr;
-                
+                // Ocultar loading y mostrar ticket
                 document.getElementById('loadingSection').classList.add('hidden');
                 document.getElementById('ticketSection').classList.remove('hidden');
                 
+                // Limpiar localStorage
                 localStorage.removeItem('ticketId');
                 
             } catch (error) {
@@ -656,9 +749,10 @@
         }
         
         function downloadQR() {
+            const qrImage = document.getElementById('qrCode').src;
             const link = document.createElement('a');
-            link.download = `entrada-evento-${Date.now()}.png`;
-            link.href = qrImageData;
+            link.download = `entrada-evento-${currentTicketId}.png`;
+            link.href = qrImage;
             link.click();
         }
         
