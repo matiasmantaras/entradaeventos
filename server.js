@@ -16,7 +16,7 @@ const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123'; // CAMBIAR EN PRODUCCIÓN
 
 // 🗄️ Base de datos PostgreSQL (Supabase)
-const { initDatabase, ticketDB, configDB } = require('./database-postgres');
+const { initDatabase, ticketDB, configDB, pool } = require('./database-postgres');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -793,7 +793,6 @@ app.post('/api/search-ticket', async (req, res) => {
         
         // Conectar a la base de datos
         await initDatabase();
-        const pool = getPool();
         
         let query = 'SELECT * FROM tickets WHERE estado = $1';
         let params = ['pagado'];
