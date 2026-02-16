@@ -296,6 +296,10 @@ app.get('/validar.html', (req, res) => {
     res.sendFile(__dirname + '/public/validar.html');
 });
 
+app.get('/mis-entradas.html', (req, res) => {
+    res.sendFile(__dirname + '/public/mis-entradas.html');
+});
+
 // Crear preferencia de pago CON VALIDACIÓN
 app.post('/create-preference', [
     // 🛡️ Validaciones
@@ -771,6 +775,86 @@ app.post('/api/resend-ticket', async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: 'Error al reenviar el email. Intenta nuevamente en unos momentos.' 
+        });
+    }
+});
+
+// API: Buscar ticket por email o DNI
+app.post('/api/search-ticket', async (req, res) => {
+    try {
+        const { email, dni } = req.body;
+        
+        if (!email && !dni) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Se requiere email o DNI' 
+            });
+        }
+        
+        // Conectar a la base de datos
+        await initDatabase();
+        const pool = getPool();
+        
+        let query = 'SELECT * FROM tickets WHERE estado = $1';
+        let params = ['pagado'];
+        
+        // Buscar por email o DNI
+        if (email && dni) {
+            query += ' AND (LOWER(email) = $2 OR dni = $3)';
+            params.push(email.toLowerCase().trim(), dni.trim());
+        } else if (email) {
+            query += ' AND LOWER(email) = $2';
+            params.push(email.toLowerCase().trim());
+        } else {
+            query += ' AND dni = $2';
+            params.push(dni.trim());
+        }
+        
+        query += ' ORDER BY fecha_creacion DESC LIMIT 1';
+        
+        const result = await pool.query(query, params);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'No se encontraron entradas con esos datos. Verifica que el pago haya sido confirmado.' 
+            });
+        }
+        
+        const ticket = result.rows[0];
+        
+        console.log(`🔍 Ticket encontrado: ${ticket.id} para ${ticket.nombre}`);
+        
+        // Formatear datos del ticket
+        const ticketData = {
+            id: ticket.id,
+            nombre: ticket.nombre,
+            email: ticket.email,
+            telefono: ticket.telefono,
+            dni: ticket.dni,
+            cantidad: ticket.cantidad,
+            tipoEntrada: ticket.tipo_entrada,
+            precioUnitario: ticket.precio_unitario,
+            subtotal: ticket.subtotal,
+            cargoServicio: ticket.cargo_servicio,
+            precioTotal: ticket.precio_total,
+            estado: ticket.estado,
+            usado: ticket.usado,
+            fechaCreacion: ticket.fecha_creacion,
+            fechaPago: ticket.fecha_pago,
+            fechaUso: ticket.fecha_uso
+        };
+        
+        res.json({ 
+            success: true, 
+            ticket: ticketData 
+        });
+        
+    } catch (error) {
+        console.error('Error al buscar ticket:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al buscar la entrada. Intenta nuevamente en unos momentos.' 
         });
     }
 });

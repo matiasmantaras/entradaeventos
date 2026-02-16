@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Entradas - TicketFlow</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Busca y recupera tus entradas. Ingresa tu email o DNI para ver tus tickets con código QR.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #151515;
+            --border: #262626;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1a1;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            background-color: var(--bg-primary);
+        }
+        
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        
+        .back-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+        
+        /* Search Form */
+        .search-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .search-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .divider {
+            text-align: center;
+            color: var(--text-secondary);
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: var(--border);
+        }
+        
+        .divider::before {
+            left: 0;
+        }
+        
+        .divider::after {
+            right: 0;
+        }
+        
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        
+        .message.active {
+            display: block;
+        }
+        
+        .message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--error);
+        }
+        
+        .message.info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--accent);
+        }
+        
+        /* Ticket Card */
+        .ticket-result {
+            display: none;
+        }
+        
+        .ticket-result.active {
+            display: block;
+        }
+        
+        .ticket-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .ticket-header {
+            background: linear-gradient(135deg, var(--accent), #2563eb);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        
+        .ticket-status {
+            display: inline-block;
+            padding: 0.375rem 0.875rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        
+        .ticket-event-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ticket-id {
+            font-family: monospace;
+            opacity: 0.8;
+            font-size: 0.75rem;
+        }
+        
+        .ticket-body {
+            padding: 2rem;
+        }
+        
+        .ticket-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .detail-item {
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .detail-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+        }
+        
+        .qr-section {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .qr-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        #ticketQR {
+            display: block;
+        }
+        
+        .qr-hint {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ticket-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            min-width: 200px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 1rem;
+            margin-top: 4rem;
+        }
+        
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        @media (min-width: 768px) {
+            .footer-content {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">🎫</div>
+                <span>TicketFlow</span>
+            </a>
+            <a href="index.html" class="back-btn">
+                <span>←</span>
+                Volver al inicio
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="page-header">
+            <h1 class="page-title">Mis Entradas</h1>
+            <p class="page-subtitle">Encuentra y recupera tus tickets ingresando tu email o DNI</p>
+        </div>
+
+        <!-- Search Form -->
+        <div class="search-card">
+            <h2 class="search-title">Buscar mi entrada</h2>
+            
+            <div class="message error" id="errorMessage"></div>
+            <div class="message info" id="infoMessage"></div>
+            
+            <form id="searchForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="ejemplo@email.com"
+                    >
+                </div>
+                
+                <div class="divider">O</div>
+                
+                <div class="form-group">
+                    <label for="dni">DNI / Documento</label>
+                    <input 
+                        type="text" 
+                        id="dni" 
+                        name="dni" 
+                        placeholder="12345678"
+                    >
+                </div>
+                
+                <button type="submit" class="btn" id="searchBtn">
+                    <span>🔍</span>
+                    <span id="btnText">Buscar mis entradas</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loadingSection">
+            <div class="spinner"></div>
+            <p style="color: var(--text-secondary);">Buscando tus entradas...</p>
+        </div>
+
+        <!-- Ticket Result -->
+        <div class="ticket-result" id="ticketResult">
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <div class="ticket-status" id="ticketStatus">✓ Confirmado</div>
+                    <h3 class="ticket-event-name">EKKLESIA 2026</h3>
+                    <p class="ticket-id">ID: <span id="ticketId">-</span></p>
+                </div>
+                
+                <div class="ticket-body">
+                    <div class="ticket-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Titular</div>
+                            <div class="detail-value" id="ticketNombre">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Email</div>
+                            <div class="detail-value" id="ticketEmail">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">DNI</div>
+                            <div class="detail-value" id="ticketDni">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Cantidad</div>
+                            <div class="detail-value" id="ticketCantidad">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Tipo</div>
+                            <div class="detail-value" id="ticketTipo">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Fecha de Compra</div>
+                            <div class="detail-value" id="ticketFecha">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="qr-section">
+                        <h4 class="qr-title">Tu Código QR</h4>
+                        <div class="qr-container">
+                            <canvas id="ticketQR"></canvas>
+                        </div>
+                        <p class="qr-hint">Presenta este código en la entrada del evento</p>
+                        
+                        <div class="ticket-actions">
+                            <button class="btn btn-secondary" onclick="downloadQR()">
+                                💾 Descargar QR
+                            </button>
+                            <button class="btn btn-secondary" onclick="resendEmail()">
+                                📧 Reenviar por email
+                            </button>
+                            <button class="btn" onclick="window.print()">
+                                🖨️ Imprimir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="logo">
+                <div class="logo-icon">🎫</div>
+                <span>TicketFlow</span>
+            </div>
+            <p class="footer-text">
+                2026 TicketFlow. Todos los derechos reservados.<br>
+                Email: matiasmantaras220603@gmail.com | Tel: +54 9 3754 49-8862
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        let currentTicket = null;
+
+        // Buscar ticket
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const dni = document.getElementById('dni').value.trim();
+            
+            // Validar que al menos uno esté completado
+            if (!email && !dni) {
+                showError('Por favor ingresa tu email o DNI');
+                return;
+            }
+            
+            // Ocultar mensajes y resultados previos
+            hideMessages();
+            document.getElementById('ticketResult').classList.remove('active');
+            
+            // Mostrar loading
+            document.getElementById('loadingSection').classList.add('active');
+            document.getElementById('searchBtn').disabled = true;
+            document.getElementById('btnText').textContent = 'Buscando...';
+            
+            try {
+                const response = await fetch('/api/search-ticket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, dni })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    currentTicket = data.ticket;
+                    displayTicket(data.ticket);
+                } else {
+                    throw new Error(data.error || 'No se encontraron entradas con esos datos');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message);
+            } finally {
+                document.getElementById('loadingSection').classList.remove('active');
+                document.getElementById('searchBtn').disabled = false;
+                document.getElementById('btnText').textContent = 'Buscar mis entradas';
+            }
+        });
+
+        // Mostrar ticket
+        async function displayTicket(ticket) {
+            // Llenar datos
+            document.getElementById('ticketId').textContent = ticket.id;
+            document.getElementById('ticketNombre').textContent = ticket.nombre;
+            document.getElementById('ticketEmail').textContent = ticket.email;
+            document.getElementById('ticketDni').textContent = ticket.dni;
+            document.getElementById('ticketCantidad').textContent = ticket.cantidad;
+            document.getElementById('ticketTipo').textContent = ticket.tipoEntrada.toUpperCase();
+            
+            // Formatear fecha
+            const fecha = new Date(ticket.fechaCreacion);
+            document.getElementById('ticketFecha').textContent = fecha.toLocaleDateString('es-AR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Estado
+            const statusEl = document.getElementById('ticketStatus');
+            if (ticket.estado === 'pagado') {
+                statusEl.textContent = '✓ Confirmado';
+                statusEl.style.background = 'rgba(16, 185, 129, 0.3)';
+            } else {
+                statusEl.textContent = '⏳ Pendiente';
+                statusEl.style.background = 'rgba(245, 158, 11, 0.3)';
+            }
+            
+            // Generar QR
+            const qrData = JSON.stringify({
+                ticketId: ticket.id,
+                nombre: ticket.nombre,
+                email: ticket.email,
+                tipoEntrada: ticket.tipoEntrada,
+                cantidad: ticket.cantidad,
+                fecha: ticket.fechaCreacion
+            });
+            
+            const canvas = document.getElementById('ticketQR');
+            await QRCode.toCanvas(canvas, qrData, {
+                width: 280,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            });
+            
+            // Mostrar resultado
+            document.getElementById('ticketResult').classList.add('active');
+            
+            // Scroll suave al resultado
+            document.getElementById('ticketResult').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+
+        // Descargar QR
+        function downloadQR() {
+            if (!currentTicket) return;
+            
+            const canvas = document.getElementById('ticketQR');
+            const link = document.createElement('a');
+            link.download = `entrada-${currentTicket.id}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Reenviar email
+        async function resendEmail() {
+            if (!currentTicket) return;
+            
+            if (currentTicket.estado !== 'pagado') {
+                showError('El pago aún no ha sido confirmado. No se puede reenviar el email.');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Reenviando...';
+            
+            try {
+                const response = await fetch('/api/resend-ticket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ticketId: currentTicket.id,
+                        email: currentTicket.email
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showInfo('✅ Email reenviado correctamente a ' + currentTicket.email);
+                } else {
+                    throw new Error(data.error || 'Error al reenviar email');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // Helpers
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+            
+            // Scroll al mensaje
+            errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function showInfo(message) {
+            const infoEl = document.getElementById('infoMessage');
+            infoEl.textContent = message;
+            infoEl.classList.add('active');
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                infoEl.classList.remove('active');
+            }, 5000);
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').classList.remove('active');
+            document.getElementById('infoMessage').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
