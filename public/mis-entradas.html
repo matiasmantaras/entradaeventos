@@ -12,7 +12,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
     
     <style>
         * {
@@ -526,7 +526,7 @@
                     <div class="qr-section">
                         <h4 class="qr-title">Tu Código QR</h4>
                         <div class="qr-container">
-                            <canvas id="ticketQR"></canvas>
+                            <div id="ticketQR"></div>
                         </div>
                         <p class="qr-hint">Presenta este código en la entrada del evento</p>
                         
@@ -675,14 +675,18 @@
                 fecha: ticket.fechaCreacion
             });
             
-            const canvas = document.getElementById('ticketQR');
-            await QRCode.toCanvas(canvas, qrData, {
+            // Limpiar contenedor QR si ya existe
+            const qrContainer = document.getElementById('ticketQR');
+            qrContainer.innerHTML = '';
+            
+            // Generar QR usando qrcodejs
+            new QRCode(qrContainer, {
+                text: qrData,
                 width: 280,
-                margin: 2,
-                color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                }
+                height: 280,
+                colorDark: '#000000',
+                colorLight: '#FFFFFF',
+                correctLevel: QRCode.CorrectLevel.H
             });
             
             console.log('✅ QR generado correctamente');
@@ -707,7 +711,13 @@
         function downloadQR() {
             if (!currentTicket) return;
             
-            const canvas = document.getElementById('ticketQR');
+            const qrContainer = document.getElementById('ticketQR');
+            const canvas = qrContainer.querySelector('canvas');
+            if (!canvas) {
+                console.error('No se encontró el canvas del QR');
+                return;
+            }
+            
             const link = document.createElement('a');
             link.download = `entrada-${currentTicket.id}.png`;
             link.href = canvas.toDataURL('image/png');
