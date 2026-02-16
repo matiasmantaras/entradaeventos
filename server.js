@@ -781,8 +781,10 @@ app.post('/api/resend-ticket', async (req, res) => {
 
 // API: Buscar ticket por email o DNI
 app.post('/api/search-ticket', async (req, res) => {
+    console.log('🔍 POST /api/search-ticket - Recibiendo petición...');
     try {
         const { email, dni } = req.body;
+        console.log('📥 Datos recibidos:', { email: email ? 'presente' : 'ausente', dni: dni ? 'presente' : 'ausente' });
         
         if (!email && !dni) {
             return res.status(400).json({ 
