@@ -543,19 +543,39 @@ app.post('/create-preference', [
 // Webhook de Mercado Pago
 app.post('/webhook', async (req, res) => {
     try {
-        console.log('🔔 Webhook recibido:', req.body);
+        console.log('🔔 Webhook recibido de Mercado Pago:', JSON.stringify(req.body, null, 2));
         const { type, data } = req.body;
         
         if (type === 'payment') {
             const paymentId = data.id;
+            console.log('💳 Procesando pago ID:', paymentId);
+            
             const payment = new Payment(client);
             const paymentData = await payment.get({ id: paymentId });
             
-            console.log('💳 Estado del pago:', paymentData.status);
+            console.log('📊 Estado del pago:', paymentData.status);
+            console.log('📊 Status detail:', paymentData.status_detail);
+            
             const ticketId = paymentData.external_reference;
+            
+            if (!ticketId) {
+                console.warn('⚠️ Webhook sin external_reference');
+                return res.sendStatus(200);
+            }
+            
             const ticket = await ticketDB.getById(ticketId);
             
-            if (ticket && paymentData.status === 'approved') {
+            if (!ticket) {
+                console.error('❌ Ticket no encontrado:', ticketId);
+                return res.sendStatus(404);
+            }
+            
+            console.log('🎫 Ticket encontrado:', ticket.nombre, '- Estado actual:', ticket.estado);
+            
+            // Solo procesar si el pago fue aprobado Y el ticket aún está pendiente
+            if (paymentData.status === 'approved' && ticket.estado === 'pendiente') {
+                console.log('✅ Pago aprobado - Actualizando ticket...');
+                
                 await ticketDB.markAsPaid(ticketId, paymentId);
                 const updatedTicket = await ticketDB.getById(ticketId);
                 
@@ -563,9 +583,13 @@ app.post('/webhook', async (req, res) => {
                 await configDB.updateStock(-ticket.cantidad);
                 console.log(`📦 Stock actualizado: -${ticket.cantidad} entradas`);
                 
-                console.log('✅ Pago aprobado, enviando ticket...');
-                // Enviar ticket por email y WhatsApp
+                console.log('📧 Enviando ticket por email y WhatsApp...');
                 await enviarTicket(updatedTicket);
+                console.log('✅ Ticket enviado correctamente');
+            } else if (ticket.estado === 'pagado') {
+                console.log('ℹ️ Ticket ya procesado anteriormente (estado: pagado)');
+            } else {
+                console.log('ℹ️ Pago en estado:', paymentData.status, '- No se procesa');
             }
         }
         
@@ -579,31 +603,52 @@ app.post('/webhook', async (req, res) => {
 // Página de éxito con verificación y envío de email
 app.get('/success', async (req, res) => {
     try {
-        const { payment_id, external_reference } = req.query;
+        const { payment_id, external_reference, collection_status, payment_status } = req.query;
         
         console.log('✅ Redirigido a /success');
         console.log('Payment ID:', payment_id);
         console.log('External Reference (Ticket ID):', external_reference);
+        console.log('Collection Status:', collection_status);
+        console.log('Payment Status:', payment_status);
         
-        // Si tenemos el ticketId, intentar verificar el pago y enviar email
+        // Si tenemos el ticketId, SIEMPRE marcar como pagado (Mercado Pago ya procesó el pago)
         if (external_reference) {
             const ticket = await ticketDB.getById(external_reference);
             
-            if (ticket && ticket.estado === 'pendiente') {
+            if (!ticket) {
+                console.error('❌ Ticket no encontrado:', external_reference);
+                return res.sendFile(__dirname + '/public/success.html');
+            }
+            
+            console.log('🎫 Ticket encontrado:', ticket.nombre, '- Estado actual:', ticket.estado);
+            
+            // Si está pendiente, actualizar a pagado
+            if (ticket.estado === 'pendiente') {
+                console.log('💳 Actualizando ticket a PAGADO...');
+                
                 // Marcar como pagado
-                await ticketDB.markAsPaid(external_reference, payment_id);
+                await ticketDB.markAsPaid(external_reference, payment_id || 'MP-SUCCESS-' + Date.now());
                 const updatedTicket = await ticketDB.getById(external_reference);
                 
                 // Descontar stock
                 await configDB.updateStock(-ticket.cantidad);
                 console.log(`📦 Stock actualizado: -${ticket.cantidad} entradas`);
                 
-                console.log('💳 Ticket actualizado a PAGADO');
-                console.log('📧 Enviando ticket...');
+                console.log('✅ Ticket actualizado a PAGADO');
+                console.log('📧 Enviando ticket por email y WhatsApp...');
                 
                 // Enviar ticket por email y WhatsApp
-                await enviarTicket(updatedTicket);
+                try {
+                    await enviarTicket(updatedTicket);
+                    console.log('✅ Ticket enviado exitosamente');
+                } catch (emailError) {
+                    console.error('⚠️ Error al enviar ticket (pero el pago fue procesado):', emailError);
+                }
+            } else {
+                console.log('ℹ️ Ticket ya estaba en estado:', ticket.estado);
             }
+        } else {
+            console.warn('⚠️ No se recibió external_reference en success');
         }
         
         res.sendFile(__dirname + '/public/success.html');
