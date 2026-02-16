@@ -21,6 +21,8 @@ const { initDatabase, ticketDB, configDB, pool } = require('./database-postgres'
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+console.log('🚀 Iniciando servidor TicketFlow...');
+
 // Inicializar base de datos (async pero no bloqueante)
 initDatabase().catch(err => {
     console.error('⚠️ Error al inicializar BD, pero el servidor continúa:', err.message);
@@ -779,9 +781,15 @@ app.post('/api/resend-ticket', async (req, res) => {
     }
 });
 
+// API: Test endpoint
+app.get('/api/test', (req, res) => {
+    res.json({ success: true, message: 'API funcionando correctamente', timestamp: new Date().toISOString() });
+});
+
 // API: Buscar ticket por email o DNI
-app.post('/api/search-ticket', async (req, res) => {
+app.post('/api/search-ticket', express.json(), async (req, res) => {
     console.log('🔍 POST /api/search-ticket - Recibiendo petición...');
+    console.log('📋 req.body:', req.body);
     try {
         const { email, dni } = req.body;
         console.log('📥 Datos recibidos:', { email: email ? 'presente' : 'ausente', dni: dni ? 'presente' : 'ausente' });
