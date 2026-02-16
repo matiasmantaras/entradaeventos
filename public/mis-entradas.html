@@ -12,7 +12,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" defer></script>
     
     <style>
         * {
@@ -597,9 +597,12 @@
                 
                 const data = await response.json();
                 
+                console.log('Respuesta del servidor:', data);
+                
                 if (response.ok && data.success) {
                     currentTicket = data.ticket;
-                    displayTicket(data.ticket);
+                    console.log('Ticket encontrado:', currentTicket);
+                    await displayTicket(data.ticket);
                 } else {
                     throw new Error(data.error || 'No se encontraron entradas con esos datos');
                 }
@@ -616,8 +619,20 @@
 
         // Mostrar ticket
         async function displayTicket(ticket) {
-            // Llenar datos
-            document.getElementById('ticketId').textContent = ticket.id;
+            try {
+                console.log('Iniciando displayTicket con:', ticket);
+                
+                // Verificar que QRCode esté cargado
+                if (typeof QRCode === 'undefined') {
+                    console.warn('⏳ QRCode library not loaded yet, waiting...');
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    if (typeof QRCode === 'undefined') {
+                        throw new Error('QRCode library failed to load');
+                    }
+                }
+                
+                // Llenar datos
+                document.getElementById('ticketId').textContent = ticket.id;
             document.getElementById('ticketNombre').textContent = ticket.nombre;
             document.getElementById('ticketEmail').textContent = ticket.email;
             document.getElementById('ticketDni').textContent = ticket.dni;
@@ -645,6 +660,7 @@
             }
             
             // Generar QR
+            console.log('Generando QR...');
             const qrData = JSON.stringify({
                 ticketId: ticket.id,
                 nombre: ticket.nombre,
@@ -664,14 +680,22 @@
                 }
             });
             
+            console.log('✅ QR generado correctamente');
+            
             // Mostrar resultado
             document.getElementById('ticketResult').classList.add('active');
+            console.log('✅ Resultado mostrado');
             
             // Scroll suave al resultado
             document.getElementById('ticketResult').scrollIntoView({ 
                 behavior: 'smooth', 
                 block: 'start' 
             });
+            
+            } catch (error) {
+                console.error('❌ Error en displayTicket:', error);
+                showError('Error al mostrar el ticket: ' + error.message);
+            }
         }
 
         // Descargar QR
