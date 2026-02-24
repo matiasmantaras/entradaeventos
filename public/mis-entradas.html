@@ -666,27 +666,28 @@
             
             // Generar QR
             console.log('Generando QR...');
+            // QR SIMPLIFICADO para evitar "code length overflow"
+            // Solo incluir datos ESENCIALES (ID y DNI para validación)
             const qrData = JSON.stringify({
-                ticketId: ticket.id,
-                nombre: ticket.nombre,
-                email: ticket.email,
-                tipoEntrada: ticket.tipoEntrada,
-                cantidad: ticket.cantidad,
-                fecha: ticket.fechaCreacion
+                id: ticket.id,
+                dni: ticket.dni,
+                qty: ticket.cantidad
             });
+            
+            console.log(`📊 Tamaño del QR: ${qrData.length} caracteres`);
             
             // Limpiar contenedor QR si ya existe
             const qrContainer = document.getElementById('ticketQR');
             qrContainer.innerHTML = '';
             
-            // Generar QR usando qrcodejs
+            // Generar QR usando qrcodejs con nivel de corrección MEDIO (permite más datos)
             new QRCode(qrContainer, {
                 text: qrData,
                 width: 280,
                 height: 280,
                 colorDark: '#000000',
                 colorLight: '#FFFFFF',
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.M  // M en vez de H para permitir más datos
             });
             
             console.log('✅ QR generado correctamente');

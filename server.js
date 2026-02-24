@@ -188,17 +188,12 @@ async function enviarTicketPorWhatsApp(ticket) {
             }
         }
 
-        // Generar QR del ticket
+        // Generar QR del ticket (SIMPLIFICADO para evitar overflow)
+        // Solo datos esenciales para validación
         const qrData = JSON.stringify({
-            ticketId: ticket.id,
-            nombre: ticket.nombre,
-            email: ticket.email,
+            id: ticket.id,
             dni: ticket.dni,
-            tipoEntrada: ticket.tipoEntrada,
-            cantidad: ticket.cantidad,
-            precioTotal: ticket.precioTotal,
-            fechaCompra: ticket.fechaCreacion,
-            estado: ticket.estado
+            qty: ticket.cantidad
         });
 
         const qrBase64 = await QRCode.toDataURL(qrData, {
@@ -682,14 +677,12 @@ app.get('/generate-qr/:ticketId', async (req, res) => {
             return res.status(400).json({ error: 'El pago aún no ha sido confirmado' });
         }
         
-        // Datos del QR
+        // Datos del QR (SIMPLIFICADO para evitar overflow)
+        // Solo datos esenciales para validación
         const qrData = JSON.stringify({
-            ticketId: ticket.id,
-            nombre: ticket.nombre,
-            email: ticket.email,
-            tipoEntrada: ticket.tipoEntrada,
-            cantidad: ticket.cantidad,
-            fecha: ticket.fechaCreacion
+            id: ticket.id,
+            dni: ticket.dni,
+            qty: ticket.cantidad
         });
         
         // Generar QR
