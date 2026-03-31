@@ -113,7 +113,12 @@ async function enviarTicketPorEmail(ticket) {
                 <p><strong>Nombre:</strong> ${ticket.nombre}</p>
                 <p><strong>DNI:</strong> ${ticket.dni}</p>
                 <p><strong>Email:</strong> ${ticket.email}</p>
-                <p><strong>Tipo de entrada:</strong> ${ticket.tipoEntrada === 'general' ? 'Anticipada' : ticket.tipoEntrada}</p>
+                <p><strong>Tipo de entrada:</strong> ${
+                    ticket.tipoEntrada === 'general' ? 'Anticipada Individual' :
+                    ticket.tipoEntrada === 'individual' ? 'Individual' :
+                    ticket.tipoEntrada === 'grupal' ? 'Grupal (4 personas)' :
+                    ticket.tipoEntrada.charAt(0).toUpperCase() + ticket.tipoEntrada.slice(1)
+                }</p>
                 <p><strong>Cantidad:</strong> ${ticket.cantidad}</p>
                 <p><strong>Total pagado:</strong> $${ticket.precioTotal.toLocaleString('es-AR')}</p>
                 <p><strong>Fecha:</strong> 1 de Mayo, 2026 - 08:00 HS</p>
@@ -209,7 +214,12 @@ async function enviarTicketPorWhatsApp(ticket) {
 📋 *Detalles:*
 👤 ${ticket.nombre}
 🆔 DNI: ${ticket.dni}
-🎫 Tipo: ${ticket.tipoEntrada === 'general' ? 'Anticipada' : ticket.tipoEntrada}
+🎫 Tipo: ${
+    ticket.tipoEntrada === 'general' ? 'Anticipada Individual' :
+    ticket.tipoEntrada === 'individual' ? 'Individual' :
+    ticket.tipoEntrada === 'grupal' ? 'Grupal (4 personas)' :
+    ticket.tipoEntrada.charAt(0).toUpperCase() + ticket.tipoEntrada.slice(1)
+}
 🔢 Cantidad: ${ticket.cantidad}
 💰 Total: $${ticket.precioTotal.toLocaleString('es-AR')}
 
@@ -405,7 +415,7 @@ app.post('/create-preference', [
     body('dni').trim().notEmpty().withMessage('DNI requerido')
         .matches(/^[0-9]{7,8}$/).withMessage('DNI inválido'),
     body('cantidad').isInt({ min: 1, max: 10 }).withMessage('Cantidad debe ser entre 1 y 10'),
-    body('tipoEntrada').isIn(['general', 'vip', 'premium']).withMessage('Tipo de entrada inválido')
+    body('tipoEntrada').isIn(['individual', 'grupal', 'general', 'vip', 'premium']).withMessage('Tipo de entrada inválido')
 ], async (req, res) => {
     try {
         // Verificar errores de validación
@@ -432,13 +442,40 @@ app.post('/create-preference', [
             });
         }
         
-        const precios = {
-            'general': 25000,
-            'vip': 35000,
-            'premium': 50000
-        };
+        // ======================
+        // SISTEMA DE PRECIOS DINÁMICOS
+        // ======================
         
-        const precioUnitario = precios[tipoEntrada] || 25000;
+        function calcularPrecio(tipoEntrada) {
+            const hoy = new Date();
+            const fecha1 = new Date('2026-04-10');
+            const fecha2 = new Date('2026-04-24');
+            
+            if (tipoEntrada === 'individual' || tipoEntrada === 'general') {
+                if (hoy <= fecha1) {
+                    return 25000;
+                } else if (hoy <= fecha2) {
+                    return 30000;
+                } else {
+                    return 35000;
+                }
+            } else if (tipoEntrada === 'grupal') {
+                if (hoy <= fecha1) {
+                    return 80000;
+                } else if (hoy <= fecha2) {
+                    return 100000;
+                } else {
+                    return 120000;
+                }
+            } else if (tipoEntrada === 'vip') {
+                return 35000;
+            } else if (tipoEntrada === 'premium') {
+                return 50000;
+            }
+            return 25000; // Precio por defecto
+        }
+        
+        const precioUnitario = calcularPrecio(tipoEntrada);
         const subtotal = precioUnitario * cantidad;
         const cargoServicio = Math.round(subtotal * 0.1); // 10% cargo por servicio
         const precioTotal = subtotal + cargoServicio;
@@ -456,7 +493,12 @@ app.post('/create-preference', [
             body: {
                 items: [
                     {
-                        title: `EKKLESIA 2026 - Entrada ${tipoEntrada === 'general' ? 'Anticipada' : tipoEntrada.toUpperCase()} (incluye cargo de servicio)`,
+                        title: `EKKLESIA 2026 - Entrada ${
+                            tipoEntrada === 'general' ? 'Anticipada Individual' :
+                            tipoEntrada === 'individual' ? 'Individual' :
+                            tipoEntrada === 'grupal' ? 'Grupal (4 personas)' :
+                            tipoEntrada.toUpperCase()
+                        } (incluye cargo de servicio)`,
                         unit_price: precioTotal, // Precio total en UN SOLO ITEM
                         quantity: 1, // Siempre 1 item con el precio total
                         currency_id: 'ARS'

@@ -425,6 +425,25 @@
     </footer>
 
     <script>
+        // ======================
+        // SISTEMA DE PRECIOS DINÁMICOS
+        // ======================
+        
+        function calcularPrecioMinimo() {
+            const hoy = new Date();
+            const fecha1 = new Date('2026-04-10');
+            const fecha2 = new Date('2026-04-24');
+            
+            // Mostramos siempre el precio individual más bajo
+            if (hoy <= fecha1) {
+                return 25000;
+            } else if (hoy <= fecha2) {
+                return 30000;
+            } else {
+                return 35000;
+            }
+        }
+        
         // Cargar stock disponible
         async function cargarStock() {
             try {
@@ -448,9 +467,21 @@
                 document.getElementById('stockText').textContent = 'Stock no disponible';
             }
         }
+        
+        // Actualizar precio dinámico
+        function actualizarPrecio() {
+            const precio = calcularPrecioMinimo();
+            const precioElement = document.querySelector('.event-price');
+            if (precioElement) {
+                precioElement.textContent = `$${precio.toLocaleString('es-AR')}`;
+            }
+        }
 
-        // Cargar stock al iniciar
-        document.addEventListener('DOMContentLoaded', cargarStock);
+        // Cargar stock y precio al iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarStock();
+            actualizarPrecio();
+        });
     </script>
 
     <!-- WhatsApp Widget -->

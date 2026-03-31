@@ -838,26 +838,42 @@
                                 <span class="section-number">1</span>
                                 Selecciona tu entrada
                             </div>
-                            <p class="section-description">Elige el tipo de entrada que mejor se adapte a ti</p>
+                            <p class="section-description">Elige el tipo de entrada que mejor se adapte a ti (<span id="periodoActual"></span>)</p>
                             
                             <div class="ticket-types">
-                                <label class="ticket-option selected" onclick="selectTicket(this, 25000)">
-                                    <input type="radio" name="tipoEntrada" value="general" checked data-price="25000">
+                                <label class="ticket-option selected" onclick="selectTicket(this, 'individual')">
+                                    <input type="radio" name="tipoEntrada" value="individual" checked data-tipo="individual">
                                     <div class="ticket-header">
-                                        <div class="ticket-icon general">👥</div>
+                                        <div class="ticket-icon general">👤</div>
                                         <div style="flex: 1;">
-                                            <div class="ticket-name">Anticipadas</div>
+                                            <div class="ticket-name">Individual</div>
                                         </div>
-                                        <div class="ticket-price">$25.000</div>
+                                        <div class="ticket-price" id="precioIndividual">$25.000</div>
                                     </div>
                                     <ul class="ticket-features">
+                                        <li>Entrada para 1 persona</li>
                                         <li>Acceso al evento completo</li>
                                         <li>Entrada digital con código QR</li>
                                         <li>Confirmación por email</li>
                                     </ul>
-                               
+                                </label>
                                 
-                                
+                                <label class="ticket-option" onclick="selectTicket(this, 'grupal')">
+                                    <input type="radio" name="tipoEntrada" value="grupal" data-tipo="grupal">
+                                    <div class="ticket-header">
+                                        <div class="ticket-icon vip">👥</div>
+                                        <div style="flex: 1;">
+                                            <div class="ticket-name">Grupal (4 personas)</div>
+                                        </div>
+                                        <div class="ticket-price" id="precioGrupal">$80.000</div>
+                                    </div>
+                                    <ul class="ticket-features">
+                                        <li>Entrada para 4 personas</li>
+                                        <li>Acceso al evento completo</li>
+                                        <li>4 entradas digitales con código QR</li>
+                                        <li>Confirmación por email</li>
+                                    </ul>
+                                </label>
                             </div>
                         </div>
 
@@ -1044,8 +1060,52 @@
 
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <script>
-        let currentPrice = 25000;
+        // ======================
+        // SISTEMA DE PRECIOS DINÁMICOS
+        // ======================
+        
+        function calcularPrecio(tipoEntrada) {
+            const hoy = new Date();
+            const fecha1 = new Date('2026-04-10');
+            const fecha2 = new Date('2026-04-24');
+            
+            if (tipoEntrada === 'individual') {
+                if (hoy <= fecha1) {
+                    return 25000;
+                } else if (hoy <= fecha2) {
+                    return 30000;
+                } else {
+                    return 35000;
+                }
+            } else if (tipoEntrada === 'grupal') {
+                if (hoy <= fecha1) {
+                    return 80000;
+                } else if (hoy <= fecha2) {
+                    return 100000;
+                } else {
+                    return 120000;
+                }
+            }
+            return 25000; // Precio por defecto
+        }
+        
+        function getPeriodoActual() {
+            const hoy = new Date();
+            const fecha1 = new Date('2026-04-10');
+            const fecha2 = new Date('2026-04-24');
+            
+            if (hoy <= fecha1) {
+                return 'Hasta el 10/04';
+            } else if (hoy <= fecha2) {
+                return 'Hasta el 24/04';
+            } else {
+                return 'Última semana';
+            }
+        }
+        
+        let currentPrice = calcularPrecio('individual');
         let currentQuantity = 1;
+        let currentTicketType = 'individual';
         const serviceCharge = 0.1; // 10% cargo por servicio
 
         // ======================
@@ -1113,12 +1173,13 @@
         // FUNCIONES DE TICKET Y CANTIDAD
         // ======================
 
-        function selectTicket(element, price) {
+        function selectTicket(element, tipo) {
             document.querySelectorAll('.ticket-option').forEach(opt => {
                 opt.classList.remove('selected');
             });
             element.classList.add('selected');
-            currentPrice = price;
+            currentTicketType = tipo;
+            currentPrice = calcularPrecio(tipo);
             updateSummary();
         }
 
@@ -1283,6 +1344,20 @@
         });
 
         // Inicializar
+        function actualizarPreciosEnPantalla() {
+            const precioIndividual = calcularPrecio('individual');
+            const precioGrupal = calcularPrecio('grupal');
+            const periodo = getPeriodoActual();
+            
+            document.getElementById('precioIndividual').textContent = `$${precioIndividual.toLocaleString('es-AR')}`;
+            document.getElementById('precioGrupal').textContent = `$${precioGrupal.toLocaleString('es-AR')}`;
+            document.getElementById('periodoActual').textContent = periodo;
+            
+            // Actualizar precio actual según el tipo seleccionado
+            currentPrice = calcularPrecio(currentTicketType);
+        }
+        
+        actualizarPreciosEnPantalla();
         cargarStock();
         updateSummary();
     </script>
