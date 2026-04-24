@@ -449,23 +449,23 @@ app.post('/create-preference', [
         function calcularPrecio(tipoEntrada) {
             const hoy = new Date();
             const fecha1 = new Date('2026-04-10');
-            const fecha2 = new Date('2026-04-24');
+            const fecha2 = new Date('2026-04-25'); // Cambiado a 25 para incluir TODO el día 24
             
             if (tipoEntrada === 'individual' || tipoEntrada === 'general') {
                 if (hoy <= fecha1) {
                     return 25000;
-                } else if (hoy <= fecha2) {
-                    return 30000;
+                } else if (hoy < fecha2) {
+                    return 30000; // Hasta el 24 de abril (23:59:59)
                 } else {
-                    return 35000;
+                    return 35000; // Desde el 25 de abril (00:00:00)
                 }
             } else if (tipoEntrada === 'grupal') {
                 if (hoy <= fecha1) {
                     return 80000;
-                } else if (hoy <= fecha2) {
-                    return 100000;
+                } else if (hoy < fecha2) {
+                    return 100000; // Hasta el 24 de abril (23:59:59)
                 } else {
-                    return 120000;
+                    return 120000; // Desde el 25 de abril (00:00:00)
                 }
             } else if (tipoEntrada === 'vip') {
                 return 35000;
