@@ -109,15 +109,28 @@ Para desplegar en producción:
 
 ## 📱 Funcionalidades del Código QR
 
-El código QR generado contiene:
-- ID único del ticket
-- Nombre del comprador
-- Email
-- Tipo de entrada
-- Cantidad de entradas
-- Fecha de compra
+El código QR generado contiene una **URL única** que al escanearla:
+- **Con cámara del celular:** Abre una página web bonita mostrando:
+  - Nombre del comprador y DNI
+  - Cantidad de entradas y tipo
+  - Total pagado
+  - Código QR visual para validación
+  - Detalles del evento (fecha, lugar)
+  - Estado de la entrada (confirmada/usada)
 
-Este QR puede ser escaneado en el evento para validar la entrada.
+- **En /validar (personal del evento):** 
+  - Permite validar la entrada
+  - Marca como usada automáticamente
+  - Muestra vibración y feedback visual
+  - Funciona con la URL completa o solo el ID
+
+**Ventajas:**
+- ✅ Profesional y fácil de usar
+- ✅ Funciona en cualquier dispositivo
+- ✅ URL compartible por WhatsApp/Email
+- ✅ No requiere app especial
+
+**Formato del QR:** `https://tudominio.com/entrada/[ID-UNICO]`
 
 ## 🛠️ Tecnologías Utilizadas
 

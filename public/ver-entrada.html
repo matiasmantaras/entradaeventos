@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Entrada - EKKLESIA 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #151515;
+            --border: #262626;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .ticket-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+        }
+
+        .ticket-header {
+            background: linear-gradient(135deg, var(--accent) 0%, #2563eb 100%);
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .ticket-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: var(--bg-secondary);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .event-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .event-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .ticket-body {
+            padding: 30px 20px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status-badge.used {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .info-section {
+            margin-bottom: 25px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .qr-section {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .qr-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .qr-code {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .ticket-id {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 15px;
+            font-family: monospace;
+        }
+
+        .event-details {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .event-details h3 {
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .event-detail-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .event-detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .icon {
+            font-size: 18px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(59, 130, 246, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .error-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .error-text {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .btn-home {
+            display: inline-block;
+            padding: 12px 30px;
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn-home:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .instructions h3 {
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            padding: 8px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .instructions li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Cargando tu entrada...</p>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;">
+            <div class="error-icon">❌</div>
+            <h2 class="error-title">Entrada no encontrada</h2>
+            <p class="error-text">No se pudo cargar la información de esta entrada.</p>
+            <a href="/" class="btn-home">Volver al inicio</a>
+        </div>
+
+        <div id="ticket" class="ticket-card" style="display: none;">
+            <div class="ticket-header">
+                <h1 class="event-title">EKKLESIA 2026</h1>
+                <p class="event-subtitle">Tu entrada digital</p>
+            </div>
+
+            <div class="ticket-body">
+                <div class="status-badge" id="statusBadge">✓ Entrada Confirmada</div>
+
+                <div class="info-section">
+                    <div class="info-label">Nombre Completo</div>
+                    <div class="info-value" id="nombre">-</div>
+                </div>
+
+                <div class="info-row">
+                    <div>
+                        <div class="info-label">DNI</div>
+                        <div class="info-value" id="dni">-</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Cantidad</div>
+                        <div class="info-value" id="cantidad">-</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div>
+                        <div class="info-label">Tipo</div>
+                        <div class="info-value" id="tipo">-</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Total Pagado</div>
+                        <div class="info-value" id="total">-</div>
+                    </div>
+                </div>
+
+                <div class="qr-section">
+                    <div class="qr-title">Código QR de Acceso</div>
+                    <div class="qr-code">
+                        <img id="qrImage" src="" alt="QR Code">
+                    </div>
+                    <div class="ticket-id" id="ticketId">ID: -</div>
+                </div>
+
+                <div class="event-details">
+                    <h3>📅 Detalles del Evento</h3>
+                    <div class="event-detail-row">
+                        <span class="icon">📅</span>
+                        <span>1 de Mayo, 2026 - 08:00 HS</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="icon">📍</span>
+                        <span>Club Alemán</span>
+                    </div>
+                </div>
+
+                <div class="instructions">
+                    <h3>⚠️ Instrucciones Importantes</h3>
+                    <ul>
+                        <li>Presentá este QR en la entrada del evento</li>
+                        <li>Guardá esta página o tomá captura de pantalla</li>
+                        <li>Llegá con anticipación</li>
+                        <li>Traé tu DNI para validación</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Obtener ID del ticket desde la URL
+        const ticketId = window.location.pathname.split('/').pop();
+
+        async function cargarEntrada() {
+            try {
+                const response = await fetch(`/api/entrada/${ticketId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarEntrada(data.ticket);
+                } else {
+                    mostrarError();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError();
+            }
+        }
+
+        function mostrarEntrada(ticket) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('ticket').style.display = 'block';
+
+            // Datos del ticket
+            document.getElementById('nombre').textContent = ticket.nombre;
+            document.getElementById('dni').textContent = ticket.dni;
+            document.getElementById('cantidad').textContent = ticket.cantidad;
+            
+            // Tipo de entrada
+            let tipoEntrada = ticket.tipoEntrada;
+            if (tipoEntrada === 'general') tipoEntrada = 'Anticipada';
+            else if (tipoEntrada === 'individual') tipoEntrada = 'Individual';
+            else if (tipoEntrada === 'grupal') tipoEntrada = 'Grupal (4p)';
+            document.getElementById('tipo').textContent = tipoEntrada;
+
+            // Total
+            document.getElementById('total').textContent = `$${ticket.precioTotal.toLocaleString('es-AR')}`;
+
+            // Estado
+            const statusBadge = document.getElementById('statusBadge');
+            if (ticket.usado) {
+                statusBadge.textContent = '✓ Entrada Utilizada';
+                statusBadge.classList.add('used');
+            } else if (ticket.estado === 'confirmado' || ticket.estado === 'pagado') {
+                statusBadge.textContent = '✓ Entrada Confirmada';
+            } else {
+                statusBadge.textContent = '⏳ Pendiente de Pago';
+            }
+
+            // QR Code
+            document.getElementById('qrImage').src = ticket.qrCode;
+            document.getElementById('ticketId').textContent = `ID: ${ticket.id}`;
+        }
+
+        function mostrarError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        }
+
+        // Cargar entrada al iniciar
+        cargarEntrada();
+    </script>
+</body>
+</html>

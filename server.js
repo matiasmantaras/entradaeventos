@@ -84,13 +84,9 @@ if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
 // Función para enviar email con QR del ticket
 async function enviarTicketPorEmail(ticket) {
     try {
-        // Generar QR con la información del ticket (simplificado para mejor lectura)
-        const qrData = JSON.stringify({
-            id: ticket.id,
-            nombre: ticket.nombre,
-            dni: ticket.dni,
-            cantidad: ticket.cantidad
-        });
+        // Generar URL para el QR (al escanear abre página bonita con info del ticket)
+        const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+        const qrData = `${baseUrl}/entrada/${ticket.id}`;
         
         // Generar QR como buffer (no Base64) para adjuntar
         const qrBuffer = await QRCode.toBuffer(qrData, {
@@ -193,13 +189,9 @@ async function enviarTicketPorWhatsApp(ticket) {
             }
         }
 
-        // Generar QR del ticket (SIMPLIFICADO para evitar overflow)
-        // Solo datos esenciales para validación
-        const qrData = JSON.stringify({
-            id: ticket.id,
-            dni: ticket.dni,
-            qty: ticket.cantidad
-        });
+        // Generar URL para el QR (igual que en el email)
+        const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+        const qrData = `${baseUrl}/entrada/${ticket.id}`;
 
         const qrBase64 = await QRCode.toDataURL(qrData, {
             width: 400,
@@ -825,9 +817,41 @@ app.post('/validate-ticket', async (req, res) => {
             });
         }
         
-        // Parsear datos del QR
-        const data = JSON.parse(ticketData);
-        const ticket = await ticketDB.getById(data.ticketId);
+        // Extraer ID del ticket (compatible con múltiples formatos)
+        let ticketId;
+        
+        // 1. Intentar como JSON antiguo (retrocompatibilidad)
+        if (ticketData.trim().startsWith('{')) {
+            try {
+                const jsonData = JSON.parse(ticketData);
+                ticketId = jsonData.id || jsonData.ticketId; // Aceptar ambos
+                console.log('📋 QR formato antiguo (JSON) detectado:', ticketId);
+            } catch (e) {
+                return res.status(400).json({ 
+                    valido: false, 
+                    mensaje: 'Formato de QR inválido (JSON corrupto)' 
+                });
+            }
+        }
+        // 2. Si es URL nueva: extraer el ID
+        else if (ticketData.includes('/entrada/')) {
+            ticketId = ticketData.split('/entrada/').pop().trim();
+            console.log('🔗 QR formato nuevo (URL) detectado:', ticketId);
+        }
+        // 3. Si es URL pero sin /entrada/
+        else if (ticketData.startsWith('http')) {
+            return res.status(400).json({ 
+                valido: false, 
+                mensaje: 'URL de ticket inválida' 
+            });
+        }
+        // 4. Asumir que es el ID directo (UUID)
+        else {
+            ticketId = ticketData.trim();
+            console.log('🆔 ID directo detectado:', ticketId);
+        }
+        
+        const ticket = await ticketDB.getById(ticketId);
         
         if (!ticket) {
             return res.json({ 
@@ -852,9 +876,9 @@ app.post('/validate-ticket', async (req, res) => {
         }
         
         // Marcar como usado
-        await ticketDB.markAsUsed(data.ticketId);
+        await ticketDB.markAsUsed(ticketId);
         
-        console.log(`✅ Ticket ${data.ticketId} validado y marcado como usado`);
+        console.log(`✅ Ticket ${ticketId} validado y marcado como usado`);
         
         // Ticket válido
         res.json({
@@ -881,6 +905,57 @@ app.post('/validate-ticket', async (req, res) => {
 // Página de validación de tickets (para personal de entrada)
 app.get('/validar', (req, res) => {
     res.sendFile(__dirname + '/public/validar.html');
+});
+
+// Página pública para ver entrada (al escanear QR)
+app.get('/entrada/:id', (req, res) => {
+    res.sendFile(__dirname + '/public/ver-entrada.html');
+});
+
+// API: Obtener datos de una entrada por ID (público)
+app.get('/api/entrada/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const ticket = await ticketDB.getById(id);
+        
+        if (!ticket) {
+            return res.status(404).json({ 
+                success: false, 
+                mensaje: 'Entrada no encontrada' 
+            });
+        }
+        
+        // Generar QR para mostrar
+        const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+        const qrData = `${baseUrl}/entrada/${ticket.id}`;
+        const qrCode = await QRCode.toDataURL(qrData, {
+            width: 300,
+            margin: 2
+        });
+        
+        // Devolver datos públicos del ticket
+        res.json({
+            success: true,
+            ticket: {
+                id: ticket.id,
+                nombre: ticket.nombre,
+                dni: ticket.dni,
+                cantidad: ticket.cantidad,
+                tipoEntrada: ticket.tipoEntrada,
+                precioTotal: ticket.precioTotal,
+                estado: ticket.estado,
+                usado: ticket.usado,
+                fechaUso: ticket.fechaUso,
+                qrCode: qrCode
+            }
+        });
+    } catch (error) {
+        console.error('Error al obtener entrada:', error);
+        res.status(500).json({ 
+            success: false, 
+            mensaje: 'Error al cargar la entrada' 
+        });
+    }
 });
 
 // API: Obtener stock disponible
